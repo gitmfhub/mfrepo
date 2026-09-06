@@ -6,8 +6,8 @@
 <title>XAUTUSDT Custom Chart</title>
 
 <!-- إعدادات PWA -->
-<link rel="manifest" href="/mfrepo/xaut.html/manifest.json">
-<link rel="apple-touch-icon" href="/mfrepo/xaut.html/asset/MahmoudFouda.png">
+<link rel="manifest" href="/mfrepo/manifest.json">
+<link rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
 <meta name="theme-color" content="#4CAF50">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -122,7 +122,7 @@
 <script>
 // ===== PWA: تسجيل Service Worker =====
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/mfrepo/xaut.html/sw.js')
+  navigator.serviceWorker.register('/mfrepo/sw.js')
     .then(() => console.log('✅ Service Worker مسجل بنجاح'))
     .catch(err => console.log('❌ فشل تسجيل Service Worker:', err));
 }
