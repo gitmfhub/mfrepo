@@ -12,12 +12,140 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="XAUT Chart">
-<link rel="icon" href="icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icon-192.png">
- <link rel="manifest" href="/xautchart/manifest.json">
-<meta name="theme-color" content="#000000">
-<link rel="apple-touch-icon" href="https://gitmfhub.github.io/xautchart/asset/MahmoudFouda.png">
-<style>
+<link rel="manifest" href="/mfrepo/xaut.html/manifest.json">
+<link rel="apple-touch-icon" href="/mfrepo/xaut.html/asset/MahmoudFouda.png">
+<meta name="theme-color" content="#4CAF50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <!-- PWA Installation Banner -->
+<script>
+  // التحقق من دعم Service Worker وmanifest
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/mfrepo/xaut.html/sw.js')
+      .then(registration => {
+        console.log('Service Worker مسجل بنجاح');
+      })
+      .catch(error => {
+        console.log('فشل تسجيل Service Worker:', error);
+      });
+  }
+
+  // عرض إشعار تنزيل التطبيق
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // منع ظهور الإشعار التلقائي
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // عرض زر تنزيل التطبيق
+    showInstallPromotion();
+  });
+
+  function showInstallPromotion() {
+    // إنشاء عنصر الإشعار
+    const banner = document.createElement('div');
+    banner.id = 'install-banner';
+    banner.style.cssText = `
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 9999;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+      font-family: Arial, sans-serif;
+      animation: slideUp 0.5s ease;
+    `;
+
+    // إضافة نمط للحركة
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      .install-btn {
+        background: white;
+        color: #764ba2;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+      .install-btn:hover {
+        transform: scale(1.05);
+      }
+      .close-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0 10px;
+      }
+      .banner-text {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .banner-icon {
+        font-size: 30px;
+      }
+    `;
+
+    // محتوى الإشعار
+    banner.innerHTML = `
+      <div class="banner-text">
+        <span class="banner-icon">📱</span>
+        <div>
+          <strong>تثبيت التطبيق</strong>
+          <div style="font-size: 14px; opacity: 0.9;">أضف التطبيق إلى شاشتك الرئيسية</div>
+        </div>
+      </div>
+      <div>
+        <button class="install-btn" id="installBtn">تثبيت</button>
+        <button class="close-btn" id="closeBanner">✕</button>
+      </div>
+    `;
+
+    document.head.appendChild(style);
+    document.body.appendChild(banner);
+
+    // زر التثبيت
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const result = await deferredPrompt.userChoice;
+        if (result.outcome === 'accepted') {
+          console.log('تم تثبيت التطبيق');
+          banner.remove();
+        }
+        deferredPrompt = null;
+      }
+    });
+
+    // زر الإغلاق
+    document.getElementById('closeBanner').addEventListener('click', () => {
+      banner.remove();
+    });
+  }
+
+  // إظهار الإشعار إذا تم تثبيت التطبيق بالفعل
+  window.addEventListener('appinstalled', () => {
+    console.log('تم تثبيت التطبيق بنجاح');
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.remove();
+  });
+</script>
+ <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body {
     width:100%; height:100%;
