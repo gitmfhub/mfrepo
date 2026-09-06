@@ -1,21 +1,21 @@
 {
-  "name": "XAUT Chart",
-  "short_name": "XAUTChart",
-  "description": "تطبيق XAUT Chart",
-  "start_url": "./",
-  "scope": "./",
+  "name": "Mahmoud Fouda App",
+  "short_name": "MF App",
+  "description": "تطبيق Mahmoud Fouda",
+  "start_url": "/mfrepo/xaut.html/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://gitmfhub.github.io/xautchart/asset/MahmoudFouda.png",
+      "src": "/mfrepo/xaut.html/asset/MahmoudFouda.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://gitmfhub.github.io/xautchart/asset/MahmoudFouda.png",
+      "src": "/mfrepo/xaut.html/asset/MahmoudFouda.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
