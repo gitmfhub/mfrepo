@@ -1,46 +1,60 @@
-const CACHE_NAME = 'xautchart-v1';
+const CACHE_NAME = 'mf-app-v1';
 const urlsToCache = [
-  'https://gitmfhub.github.io/xautchart/',
-  'https://gitmfhub.github.io/xautchart/index.html',
-  'https://gitmfhub.github.io/xautchart/manifest.json',
-  'https://gitmfhub.github.io/xautchart/asset/MahmoudFouda.png'
-  // يمكنك إضافة أي ملفات CSS أو JS أو صور أخرى تستخدمها في صفحتك هنا
+  '/mfrepo/',
+  '/mfrepo/xaut.html/',
+  '/mfrepo/xaut.html/manifest.json',
+  '/mfrepo/xaut.html/asset/MahmoudFouda.png'
 ];
 
-// تثبيت الـ Service Worker وحفظ الملفات
+// تثبيت Service Worker وتخزين الملفات
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('تم فتح الكاش');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// جلب الملفات من الـ Cache أو من الشبكة
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // إذا وجدت الملف في الـ Cache أرجعه، وإلا اطلبه من الشبكة
-        return response || fetch(event.request);
-      })
-  );
-});
-
-// تحديث الـ Service Worker عند وجود نسخة جديدة
+// تفعيل Service Worker وتنظيف الكاش القديم
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
       );
     })
+  );
+});
+
+// اعتراض الطلبات والاستجابة من الكاش أو الشبكة
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // إرجاع الملف من الكاش إذا وجد
+        if (response) {
+          return response;
+        }
+        // وإلا جلب الملف من الشبكة
+        return fetch(event.request)
+          .then(response => {
+            // تخزين الملفات الجديدة في الكاش
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+            return response;
+          });
+      })
   );
 });
