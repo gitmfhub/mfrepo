@@ -5,14 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>xaut</title>
 
-<!-- إعدادات PWA والربط المباشر -->
-<link rel="manifest" href="/mfrepo/manifest.json">
-<link rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
-<link rel="shortcut icon" type="image/png" href="/mfrepo/asset/MahmoudFouda.png">
+<!-- الأيقونات والوسوم الخاصة بهذه الصفحة فقط -->
+<link id="page_favicon" rel="shortcut icon" type="image/png" href="/mfrepo/asset/MahmoudFouda.png">
+<link id="apple_icon" rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
 <meta name="theme-color" content="#4CAF50">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="mfrepo">
+<meta name="apple-mobile-web-app-title" content="xaut">
+
+<script>
+  // ==== توليد Manifest مستقل ومخصص بالكامل لهذه الصفحة (xaut) ====
+  (function() {
+    var pageTitle = document.title; // سياخذ كلمة "xaut" من عنوان الصفحة بالأعلى
+    var pageIcon = document.getElementById('page_favicon') ? document.getElementById('page_favicon').href : "/mfrepo/asset/MahmoudFouda.png";
+
+    var manifestData = {
+      "name": pageTitle,
+      "short_name": pageTitle,
+      "start_url": window.location.href,
+      "display": "standalone",
+      "background_color": "#131722",
+      "theme_color": "#4CAF50",
+      "icons": [
+        {
+          "src": pageIcon,
+          "sizes": "192x192 512x512",
+          "type": "image/png",
+          "purpose": "any maskable"
+        }
+      ]
+    };
+
+    var stringManifest = JSON.stringify(manifestData);
+    var blob = new Blob([stringManifest], { type: 'application/json' });
+    var manifestURL = URL.createObjectURL(blob);
+
+    var manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = manifestURL;
+    document.head.appendChild(manifestLink);
+  })();
+</script>
 
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -128,7 +161,7 @@ if ('serviceWorker' in navigator) {
     .catch(err => console.log('❌ فشل تسجيل Service Worker:', err));
 }
 
-// ===== PWA: إشعار وتثبيت التطبيق الإجباري عند الطلب =====
+// ===== PWA: إشعار وتثبيت التطبيق الديناميكي الخاص بهذه الصفحة =====
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -200,8 +233,8 @@ function showInstallBanner() {
     <div class="banner-text">
       <span class="banner-icon">📱</span>
       <div>
-        <strong>تثبيت التطبيق</strong>
-        <div style="font-size: 14px; opacity: 0.9;">أضف التطبيق إلى شاشتك الرئيسية للوصول السريع</div>
+        <strong>تثبيت تطبيق (${document.title})</strong>
+        <div style="font-size: 14px; opacity: 0.9;">أضف هذه الصفحة لشاشتك الرئيسية لتصبح تطبيقاً مستقلًا</div>
       </div>
     </div>
     <div>
@@ -236,7 +269,7 @@ window.addEventListener('appinstalled', () => {
   if (banner) banner.remove();
 });
 
-// ===== كود التطبيق الأساسي =====
+// ===== كود التطبيق الأساسي (الرسم البياني) =====
 var STORAGE_TF_KEY = "xaut_custom_tf";
 var STORAGE_DATA_PREFIX = "xaut_candles_";
 var STORAGE_LAST_UPDATE_KEY = "xaut_last_update";
@@ -285,7 +318,6 @@ window.addEventListener("resize", function() {
   chart.resize(container.clientWidth, container.clientHeight);
 });
 
-// ==== تبديل الفريم ====
 var currentTf = localStorage.getItem(STORAGE_TF_KEY) || "60";
 var tfButtons = document.querySelectorAll(".tf_btn");
 
@@ -305,7 +337,6 @@ tfButtons.forEach(function(btn) {
   });
 });
 
-// ==== حفظ البيانات محليًا ====
 function saveCandlesToStorage() {
   try {
     localStorage.setItem(STORAGE_DATA_PREFIX + currentTf, JSON.stringify(lastKnownCandles));
@@ -315,7 +346,6 @@ function saveCandlesToStorage() {
 
 setInterval(saveCandlesToStorage, 10000);
 
-// ==== تحميل من الكاش المحلي ====
 function loadFromCacheIfAny() {
   try {
     var cached = localStorage.getItem(STORAGE_DATA_PREFIX + currentTf);
@@ -331,7 +361,6 @@ function loadFromCacheIfAny() {
   } catch(e) {}
 }
 
-// ==== جلب البيانات من Bybit ====
 function loadCandles() {
   fetch("https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=" + currentTf + "&limit=200")
     .then(function(res) {
@@ -360,7 +389,6 @@ function loadCandles() {
     });
 }
 
-// ==== تحديث آخر شمعة ====
 function updateLastCandle() {
   fetch("https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=" + currentTf + "&limit=2")
     .then(function(res) {
@@ -393,7 +421,6 @@ function updateLastCandle() {
     });
 }
 
-// ==== إدارة حالة الاتصال ====
 function setOnlineState(state) {
   isOnline = state;
   if (!state) {
@@ -406,7 +433,6 @@ function setOnlineState(state) {
   }
 }
 
-// ==== تنبيه انقطاع الإنترنت ====
 function checkConnectionPopup() {
   fetch("https://api.bybit.com/v5/market/time")
     .then(function(res) {
@@ -430,7 +456,6 @@ function showPopupIfOffline(offline) {
 
 setInterval(checkConnectionPopup, 3 * 60 * 1000);
 
-// ==== بدء التشغيل ====
 loadFromCacheIfAny();
 loadCandles();
 setInterval(updateLastCandle, 2000);
@@ -438,7 +463,6 @@ setInterval(updateLastCandle, 2000);
 window.addEventListener("beforeunload", function() {
   saveCandlesToStorage();
 });
-
 </script>
 </body>
 </html>
