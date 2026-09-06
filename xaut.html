@@ -5,27 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>xaut</title>
 
-<!-- الأيقونات والوسوم الخاصة بهذه الصفحة فقط -->
+<!-- الأيقونات والوسوم الخاصة بهذه الصفحة فقط مع جعل الـ theme-color شفافاً -->
 <link id="page_favicon" rel="shortcut icon" type="image/png" href="/mfrepo/asset/xaut.png">
 <link id="apple_icon" rel="apple-touch-icon" href="/mfrepo/asset/xaut.png">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="transparent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="xaut">
 
 <script>
-  // ==== توليد Manifest مستقل ومخصص بالكامل لهذه الصفحة (xaut) ====
+  // ==== توليد Manifest مستقل ومخصص بالكامل لهذه الصفحة (xaut) مع دعم الشفافية ====
   (function() {
-    var pageTitle = document.title; // سياخذ كلمة "xaut" من عنوان الصفحة بالأعلى
-    var pageIcon = document.getElementById('page_favicon') ? document.getElementById('page_favicon').href : "/mfrepo/asset/MahmoudFouda.png";
+    var pageTitle = document.title; 
+    var pageIcon = document.getElementById('page_favicon') ? document.getElementById('page_favicon').href : "/mfrepo/asset/xaut.png";
 
     var manifestData = {
       "name": pageTitle,
       "short_name": pageTitle,
       "start_url": window.location.href,
       "display": "standalone",
-      "background_color": "#ffffff",
-      "theme_color": "#ffffff",
+      "background_color": "#131722",
+      "theme_color": "transparent",
       "icons": [
         {
           "src": pageIcon,
@@ -57,18 +57,21 @@
   }
   #chart_container {
     position:fixed;
-    top:44px; left:0; right:0; bottom:0;
+    top: calc(44px + env(safe-area-inset-top)); 
+    left:0; right:0; bottom:0;
     width:100%;
   }
   #toolbar {
     position:fixed;
     top:0; left:0; right:0;
-    height:44px;
+    height: calc(44px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
     background:#1e222d;
     display:flex;
     align-items:center;
     gap:6px;
-    padding:0 8px;
+    padding-left: 8px;
+    padding-right: 8px;
     overflow-x:auto;
     white-space:nowrap;
     z-index:1000;
@@ -89,7 +92,8 @@
   }
   #price_label {
     position:fixed;
-    top:50px; right:10px;
+    top: calc(50px + env(safe-area-inset-top));
+    right:10px;
     color:#d1d4dc;
     font-size:13px;
     background:rgba(30,34,45,0.7);
@@ -99,7 +103,8 @@
   }
   #offline_banner {
     position:fixed;
-    top:50px; left:10px; right:10px;
+    top: calc(50px + env(safe-area-inset-top));
+    left:10px; right:10px;
     background:#ef5350;
     color:#fff;
     padding:8px 12px;
@@ -126,7 +131,7 @@
     white-space:nowrap;
   }
   #conn_popup.show {
-    top:50px;
+    top: calc(50px + env(safe-area-inset-top));
   }
 </style>
 </head>
