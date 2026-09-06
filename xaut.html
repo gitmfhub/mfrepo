@@ -3,15 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>XAUTChart</title>
+<title>xaut</title>
 
-<!-- إعدادات PWA -->
-<link rel="manifest" href="/mfrepo/manifest.json">
-<link rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
+<!-- إعدادات PWA الديناميكية -->
+<link id="pwa_manifest" rel="manifest" href="/mfrepo/manifest.json">
+<link id="apple_icon" rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
+<link id="page_favicon" rel="shortcut icon" type="image/png" href="/mfrepo/asset/MahmoudFouda.png">
 <meta name="theme-color" content="#4CAF50">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="xaut">
+<meta name="apple-mobile-web-app-title" content="mfrepo">
+
+<script>
+  // ==== التحديث الديناميكي لعنوان الصفحة والأيقونات حسب اسم الصفحة أو المتغيرات ====
+  (function() {
+    var customName = "mfrepo"; // يمكنك تغيير الاسم أو جعله يتغير برمجياً حسب مسار الصفحة
+    var customIcon = "/mfrepo/asset/MahmoudFouda.png"; // رابط الأيقونة الخاص بهذه الصفحة
+
+    // تحديث عنوان الصفحة
+    document.title = customName;
+
+    // تحديث الأيقونات برمجياً
+    window.addEventListener('DOMContentLoaded', function() {
+      var appleIconEl = document.getElementById('apple_icon');
+      var faviconEl = document.getElementById('page_favicon');
+      var appTitleMeta = document.querySelector("meta[name='apple-mobile-web-app-title']");
+
+      if (appleIconEl) appleIconEl.href = customIcon;
+      if (faviconEl) faviconEl.href = customIcon;
+      if (appTitleMeta) appTitleMeta.content = customName;
+    });
+  })();
+</script>
 
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
