@@ -1,6 +1,6 @@
 {
-  "name": "XAUT Chart PWA",
-  "short_name": "XAUT Chart",
+  "name": "MahmoudFouda",
+  "short_name": "mfrepo",
   "start_url": "/mfrepo/xaut.html",
   "display": "standalone",
   "background_color": "#131722",
