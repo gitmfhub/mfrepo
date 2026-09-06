@@ -3,8 +3,8 @@
   "short_name": "mfrepo",
   "start_url": "/mfrepo/xaut.html",
   "display": "standalone",
-  "background_color": "#131722",
-  "theme_color": "#4CAF50",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "/mfrepo/asset/MahmoudFouda.png",
