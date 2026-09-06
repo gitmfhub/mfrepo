@@ -2,8 +2,8 @@ const CACHE_NAME = 'mf-app-v1';
 const urlsToCache = [
   '/mfrepo/',
   '/mfrepo/xaut.html/',
-  '/mfrepo/xaut.html/manifest.json',
-  '/mfrepo/xaut.html/asset/MahmoudFouda.png'
+  '/mfrepo/manifest.json',
+  '/mfrepo/asset/MahmoudFouda.png'
 ];
 
 // تثبيت Service Worker وتخزين الملفات
