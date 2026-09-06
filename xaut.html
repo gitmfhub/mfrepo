@@ -127,7 +127,7 @@ if ('serviceWorker' in navigator) {
     .catch(err => console.log('❌ فشل تسجيل Service Worker:', err));
 }
 
-// ===== PWA: عرض إشعار تثبيت التطبيق =====
+// ===== PWA: إشعار وتثبيت التطبيق الإجباري عند الطلب =====
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -136,6 +136,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function showInstallBanner() {
+  if (document.getElementById('install-banner')) return;
+
   const banner = document.createElement('div');
   banner.id = 'install-banner';
   banner.style.cssText = `
@@ -198,11 +200,11 @@ function showInstallBanner() {
       <span class="banner-icon">📱</span>
       <div>
         <strong>تثبيت التطبيق</strong>
-        <div style="font-size: 14px; opacity: 0.9;">أضف التطبيق إلى شاشتك الرئيسية</div>
+        <div style="font-size: 14px; opacity: 0.9;">أضف التطبيق إلى شاشتك الرئيسية للوصول السريع</div>
       </div>
     </div>
     <div>
-      <button class="install-btn" id="installBtn">تثبيت</button>
+      <button class="install-btn" id="installBtn">تثبيت الآن</button>
       <button class="close-btn" id="closeBanner">✕</button>
     </div>
   `;
@@ -215,7 +217,7 @@ function showInstallBanner() {
       deferredPrompt.prompt();
       const result = await deferredPrompt.userChoice;
       if (result.outcome === 'accepted') {
-        console.log('✅ تم تثبيت التطبيق');
+        console.log('✅ تم تثبيت التطبيق بنجاح');
         banner.remove();
       }
       deferredPrompt = null;
@@ -228,7 +230,7 @@ function showInstallBanner() {
 }
 
 window.addEventListener('appinstalled', () => {
-  console.log('✅ تم تثبيت التطبيق بنجاح');
+  console.log('✅ التطبيق مثبت بالفعل');
   const banner = document.getElementById('install-banner');
   if (banner) banner.remove();
 });
