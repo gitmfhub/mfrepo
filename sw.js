@@ -1,60 +1,46 @@
-const CACHE_NAME = 'mf-app-v1';
-const urlsToCache = [
-  '/mfrepo/',
-  '/mfrepo/xaut.html/',
+const CACHE_NAME = 'xaut-pwa-v1';
+const ASSETS_TO_CACHE = [
+  '/mfrepo/xaut.html',
   '/mfrepo/manifest.json',
-  '/mfrepo/asset/MahmoudFouda.png'
+  '/mfrepo/asset/MahmoudFouda.png',
+  'https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js'
 ];
 
-// تثبيت Service Worker وتخزين الملفات
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('تم فتح الكاش');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
-// تفعيل Service Worker وتنظيف الكاش القديم
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
       );
     })
   );
+  self.clients.claim();
 });
 
-// اعتراض الطلبات والاستجابة من الكاش أو الشبكة
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // إرجاع الملف من الكاش إذا وجد
-        if (response) {
-          return response;
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('/mfrepo/xaut.html');
         }
-        // وإلا جلب الملف من الشبكة
-        return fetch(event.request)
-          .then(response => {
-            // تخزين الملفات الجديدة في الكاش
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            return response;
-          });
-      })
+      });
+    })
   );
 });
