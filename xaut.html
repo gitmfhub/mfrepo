@@ -3,62 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-xaut
+<title>mfrepo</title>
 
-<!-- الأيقونات الديناميكية -->
-<link id="apple_icon" rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
-<link id="page_favicon" rel="shortcut icon" type="image/png" href="/mfrepo/asset/MahmoudFouda.png">
+<!-- إعدادات PWA والربط المباشر -->
+<link rel="manifest" href="/mfrepo/manifest.json">
+<link rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
+<link rel="shortcut icon" type="image/png" href="/mfrepo/asset/MahmoudFouda.png">
 <meta name="theme-color" content="#4CAF50">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="mfrepo">
-
-<script>
-  // ==== توليد Manifest ديناميكياً بناءً على ما توفره في هذه الصفحة ====
-  (function() {
-    var pageTitle = "mfrepo"; // عنوان التطبيق
-    var pageIcon = "/mfrepo/asset/MahmoudFouda.png"; // رابط الصورة الخاص بهذه الصفحة
-
-    // 1. تحديث عنوان الصفحة ووسوم الأبل والأيقونة برمجياً
-    document.title = pageTitle;
-    
-    window.addEventListener('DOMContentLoaded', function() {
-      var appleIconEl = document.getElementById('apple_icon');
-      var faviconEl = document.getElementById('page_favicon');
-      var appTitleMeta = document.querySelector("meta[name='apple-mobile-web-app-title']");
-
-      if (appleIconEl) appleIconEl.href = pageIcon;
-      if (faviconEl) faviconEl.href = pageIcon;
-      if (appTitleMeta) appTitleMeta.content = pageTitle;
-    });
-
-    // 2. حقن ملف Manifest ديناميكي لكي يعتمد المتصفح الاسم والصورة الحالية للتثبيت
-    var manifestData = {
-      "name": pageTitle,
-      "short_name": pageTitle,
-      "start_url": window.location.pathname,
-      "display": "standalone",
-      "background_color": "#131722",
-      "theme_color": "#4CAF50",
-      "icons": [
-        {
-          "src": pageIcon,
-          "sizes": "192x192 512x512",
-          "type": "image/png"
-        }
-      ]
-    };
-
-    var stringManifest = JSON.stringify(manifestData);
-    var blob = new Blob([stringManifest], { type: 'application/json' });
-    var manifestURL = URL.createObjectURL(blob);
-
-    var manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = manifestURL;
-    document.head.appendChild(manifestLink);
-  })();
-</script>
 
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
