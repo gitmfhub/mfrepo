@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>XAUTUSDT Custom Chart</title>
+
+<!-- إعدادات تطبيق الويب التقدمي (PWA) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#131722">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="XAUT Chart">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+ <link rel="manifest" href="/xautchart/manifest.json">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="https://gitmfhub.github.io/xautchart/asset/MahmoudFouda.png">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100%; height:100%;
+    background:#131722;
+    overflow:hidden;
+    font-family: sans-serif;
+  }
+  #chart_container {
+    position:fixed;
+    top:44px; left:0; right:0; bottom:0;
+    width:100%;
+  }
+  #toolbar {
+    position:fixed;
+    top:0; left:0; right:0;
+    height:44px;
+    background:#1e222d;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:0 8px;
+    overflow-x:auto;
+    white-space:nowrap;
+    z-index:1000;
+  }
+  .tf_btn {
+    background:#2a2e39;
+    color:#d1d4dc;
+    border:none;
+    padding:6px 12px;
+    border-radius:4px;
+    font-size:13px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .tf_btn.active {
+    background:#2962ff;
+    color:#fff;
+  }
+  #price_label {
+    position:fixed;
+    top:50px; right:10px;
+    color:#d1d4dc;
+    font-size:13px;
+    background:rgba(30,34,45,0.7);
+    padding:4px 8px;
+    border-radius:4px;
+    z-index:999;
+  }
+  #offline_banner {
+    position:fixed;
+    top:50px; left:10px; right:10px;
+    background:#ef5350;
+    color:#fff;
+    padding:8px 12px;
+    border-radius:6px;
+    font-size:13px;
+    text-align:center;
+    z-index:2000;
+    display:none;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #conn_popup {
+    position:fixed;
+    top:-80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#ef5350;
+    color:#fff;
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    z-index:3000;
+    box-shadow:0 4px 12px rgba(0,0,0,0.5);
+    transition: top 0.4s ease;
+    white-space:nowrap;
+  }
+  #conn_popup.show {
+    top:50px;
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <button class="tf_btn" data-tf="1">1m</button>
+  <button class="tf_btn" data-tf="3">3m</button>
+  <button class="tf_btn" data-tf="5">5m</button>
+  <button class="tf_btn" data-tf="15">15m</button>
+  <button class="tf_btn" data-tf="30">30m</button>
+  <button class="tf_btn active" data-tf="60">1h</button>
+  <button class="tf_btn" data-tf="120">2h</button>
+  <button class="tf_btn" data-tf="240">4h</button>
+  <button class="tf_btn" data-tf="360">6h</button>
+  <button class="tf_btn" data-tf="720">12h</button>
+  <button class="tf_btn" data-tf="D">1d</button>
+  <button class="tf_btn" data-tf="W">1w</button>
+</div>
+
+<div id="chart_container"></div>
+<div id="price_label">--</div>
+<div id="offline_banner">⚠️ لا يوجد اتصال بالإنترنت - يتم عرض آخر بيانات محفوظة</div>
+<div id="conn_popup">⚠️ لا يوجد اتصال بالإنترنت حاليًا</div>
+
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+var STORAGE_TF_KEY = "xaut_custom_tf";
+var STORAGE_DATA_PREFIX = "xaut_candles_";
+var STORAGE_LAST_UPDATE_KEY = "xaut_last_update";
+
+var container = document.getElementById("chart_container");
+var priceLabel = document.getElementById("price_label");
+var offlineBanner = document.getElementById("offline_banner");
+var connPopup = document.getElementById("conn_popup");
+
+var isOnline = true;
+var lastKnownCandles = [];
+
+var chart = LightweightCharts.createChart(container, {
+  width: container.clientWidth,
+  height: container.clientHeight,
+  layout: {
+    background: { type: 'solid', color: '#131722' },
+    textColor: '#d1d4dc',
+  },
+  grid: {
+    vertLines: { color: 'rgba(255,255,255,0.06)' },
+    horzLines: { color: 'rgba(255,255,255,0.06)' },
+  },
+  timeScale: {
+    timeVisible: true,
+    secondsVisible: false,
+    borderColor: '#363a45',
+  },
+  rightPriceScale: {
+    borderColor: '#363a45',
+  },
+  crosshair: {
+    mode: LightweightCharts.CrosshairMode.Normal,
+  },
+});
+
+var candleSeries = chart.addCandlestickSeries({
+  upColor: '#26a69a',
+  downColor: '#ef5350',
+  borderVisible: false,
+  wickUpColor: '#26a69a',
+  wickDownColor: '#ef5350',
+});
+
+window.addEventListener("resize", function() {
+  chart.resize(container.clientWidth, container.clientHeight);
+});
+
+// ==== تبديل الفريم ====
+var currentTf = localStorage.getItem(STORAGE_TF_KEY) || "60";
+var tfButtons = document.querySelectorAll(".tf_btn");
+
+tfButtons.forEach(function(btn) {
+  if (btn.getAttribute("data-tf") === currentTf) {
+    btn.classList.add("active");
+  } else {
+    btn.classList.remove("active");
+  }
+  btn.addEventListener("click", function() {
+    currentTf = btn.getAttribute("data-tf");
+    localStorage.setItem(STORAGE_TF_KEY, currentTf);
+    tfButtons.forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    loadFromCacheIfAny();
+    loadCandles();
+  });
+});
+
+// ==== حفظ البيانات محليًا ====
+function saveCandlesToStorage() {
+  try {
+    localStorage.setItem(STORAGE_DATA_PREFIX + currentTf, JSON.stringify(lastKnownCandles));
+    localStorage.setItem(STORAGE_LAST_UPDATE_KEY, new Date().toISOString());
+  } catch(e) {}
+}
+
+// حفظ دوري كل 10 ثواني بغض النظر عن أي حدث
+setInterval(saveCandlesToStorage, 10000);
+
+// ==== تحميل من الكاش المحلي فورًا (قبل أي اتصال) ====
+function loadFromCacheIfAny() {
+  try {
+    var cached = localStorage.getItem(STORAGE_DATA_PREFIX + currentTf);
+    if (cached) {
+      var parsed = JSON.parse(cached);
+      if (parsed && parsed.length > 0) {
+        lastKnownCandles = parsed;
+        candleSeries.setData(parsed);
+        var lastCandle = parsed[parsed.length - 1];
+        priceLabel.textContent = lastCandle.close.toFixed(2) + " USDT (مخزّن)";
+      }
+    }
+  } catch(e) {}
+}
+
+// ==== جلب البيانات من Bybit ====
+function loadCandles() {
+  fetch("https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=" + currentTf + "&limit=200")
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      if (!data.result || !data.result.list) throw new Error("بيانات غير صالحة");
+      var raw = data.result.list.slice().reverse();
+      var candles = raw.map(function(c) {
+        return {
+          time: Math.floor(parseInt(c[0]) / 1000),
+          open: parseFloat(c[1]),
+          high: parseFloat(c[2]),
+          low: parseFloat(c[3]),
+          close: parseFloat(c[4]),
+        };
+      });
+      lastKnownCandles = candles;
+      candleSeries.setData(candles);
+      saveCandlesToStorage();
+      setOnlineState(true);
+    })
+    .catch(function(err) {
+      setOnlineState(false);
+    });
+}
+
+// ==== تحديث آخر شمعة والسعر لحظيًا ====
+function updateLastCandle() {
+  fetch("https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=" + currentTf + "&limit=2")
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("بيانات غير صالحة");
+      var c = data.result.list[0];
+      var candle = {
+        time: Math.floor(parseInt(c[0]) / 1000),
+        open: parseFloat(c[1]),
+        high: parseFloat(c[2]),
+        low: parseFloat(c[3]),
+        close: parseFloat(c[4]),
+      };
+      candleSeries.update(candle);
+
+      if (lastKnownCandles.length > 0 && lastKnownCandles[lastKnownCandles.length - 1].time === candle.time) {
+        lastKnownCandles[lastKnownCandles.length - 1] = candle;
+      } else {
+        lastKnownCandles.push(candle);
+      }
+
+      priceLabel.textContent = candle.close.toFixed(2) + " USDT";
+      setOnlineState(true);
+    })
+    .catch(function(err) {
+      setOnlineState(false);
+    });
+}
+
+// ==== إدارة حالة الاتصال ====
+function setOnlineState(state) {
+  var wasOnline = isOnline;
+  isOnline = state;
+
+  if (!state) {
+    offlineBanner.style.display = "block";
+    if (lastKnownCandles.length > 0) {
+      priceLabel.textContent = lastKnownCandles[lastKnownCandles.length - 1].close.toFixed(2) + " USDT (مخزّن)";
+    }
+  } else {
+    offlineBanner.style.display = "none";
+  }
+}
+
+// ==== تنبيه منبثق كل 3 دقائق عند انقطاع الإنترنت ====
+function checkConnectionPopup() {
+  fetch("https://api.bybit.com/v5/market/time")
+    .then(function(res) {
+      if (!res.ok) throw new Error("no connection");
+      showPopupIfOffline(false);
+    })
+    .catch(function() {
+      showPopupIfOffline(true);
+    });
+}
+
+function showPopupIfOffline(offline) {
+  if (offline) {
+    connPopup.classList.add("show");
+    setOnlineState(false);
+    setTimeout(function() {
+      connPopup.classList.remove("show");
+    }, 5000);
+  }
+}
+
+setInterval(checkConnectionPopup, 3 * 60 * 1000);
+
+// ==== بدء التشغيل ====
+loadFromCacheIfAny();
+loadCandles();
+setInterval(updateLastCandle, 2000);
+
+window.addEventListener("beforeunload", function() {
+  saveCandlesToStorage();
+});
+
+// ==== تسجيل Service Worker لتفعيل العمل بدون إنترنت (PWA) ====
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function() {
+    navigator.serviceWorker.register("sw.js").then(function(reg) {
+      console.log("Service Worker registered:", reg.scope);
+    }).catch(function(err) {
+      console.log("Service Worker registration failed:", err);
+    });
+  });
+}
+</script>
+<script>
+  // تسجيل الـ Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('https://gitmfhub.github.io/xautchart/sw.js')
+        .then(registration => {
+          console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(error => {
+          console.log('Service Worker registration failed:', error);
+        });
+    });
+  }
+</script>
+</body>
+</html>
