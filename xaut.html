@@ -3,135 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>xaut</title>
+<title>XAUTChart</title>
 
-<!-- الأيقونات والوسوم الخاصة بهذه الصفحة مع مطابقة لون السيرفر والخلفية -->
-<link id="page_favicon" rel="shortcut icon" type="image/png" href="/mfrepo/asset/xaut.png">
-<link id="apple_icon" rel="apple-touch-icon" href="/mfrepo/asset/xaut.png">
+<link rel="manifest" href="/mfrepo/manifest.json">
+<link rel="apple-touch-icon" href="/mfrepo/asset/MahmoudFouda.png">
 <meta name="theme-color" content="#131722">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="xaut">
 
-<script>
-  // ==== توليد Manifest مستقل ومخصص بالكامل لهذه الصفحة (xaut) ====
-  (function() {
-    var pageTitle = document.title; 
-    var pageIcon = document.getElementById('page_favicon') ? document.getElementById('page_favicon'].href : "/mfrepo/asset/xaut.png";
-
-    var manifestData = {
-      "name": pageTitle,
-      "short_name": pageTitle,
-      "start_url": window.location.href,
-      "display": "standalone",
-      "background_color": "#131722",
-      "theme_color": "#131722",
-      "icons": [
-        {
-          "src": pageIcon,
-          "sizes": "192x192 512x512",
-          "type": "image/png",
-          "purpose": "any maskable"
-        }
-      ]
-    };
-
-    var stringManifest = JSON.stringify(manifestData);
-    var blob = new Blob([stringManifest], { type: 'application/json' });
-    var manifestURL = URL.createObjectURL(blob);
-
-    var manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = manifestURL;
-    document.head.appendChild(manifestLink);
-  })();
-</script>
-
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
-    width:100%; height:100%;
-    background:#131722;
-    overflow:hidden;
-    font-family: sans-serif;
+    width: 100%;
+    height: 100%;
+    background: #131722;
+    overflow: hidden; /* إلغاء التمرير العام تماماً */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
-  #chart_container {
-    position:fixed;
-    top: calc(44px + env(safe-area-inset-top)); 
-    left:0; right:0; bottom:0;
-    width:100%;
-  }
+  
+  /* شريط الأدوات العلوي مع تمرير أفقى هادئ */
   #toolbar {
-    position:fixed;
-    top:0; left:0; right:0;
-    height: calc(44px + env(safe-area-inset-top));
-    padding-top: env(safe-area-inset-top);
-    background:#1e222d;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    padding-left: 8px;
-    padding-right: 8px;
-    overflow-x:auto;
-    white-space:nowrap;
-    z-index:1000;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    background: #1e222d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    overflow-x: auto;
+    white-space: nowrap;
+    z-index: 1000;
+    scrollbar-width: none; /* إخفاء شريط التمرير لمتصفحات فايرفوكس */
+    -webkit-overflow-scrolling: touch; /* تمرير هادئ وسلس لأجهزة آبل */
   }
+  #toolbar::-webkit-scrollbar {
+    display: none; /* إخفاء شريط التمرير لمتصفحات كروم وسفاري */
+  }
+
   .tf_btn {
-    background:#2a2e39;
-    color:#d1d4dc;
-    border:none;
-    padding:6px 12px;
-    border-radius:4px;
-    font-size:13px;
-    cursor:pointer;
-    flex-shrink:0;
+    background: #2a2e39;
+    color: #d1d4dc;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s;
   }
   .tf_btn.active {
-    background:#2962ff;
-    color:#fff;
+    background: #2962ff;
+    color: #fff;
   }
+
+  /* حاوية الرسم البياني لتأخذ المساحة المتبقية بدون تجاوز الطول */
+  #chart_container {
+    position: absolute;
+    top: 48px; left: 0; right: 0; bottom: 0;
+    width: 100%;
+    background: #131722;
+  }
+
   #price_label {
-    position:fixed;
-    top: calc(50px + env(safe-area-inset-top));
-    right:10px;
-    color:#d1d4dc;
-    font-size:13px;
-    background:rgba(30,34,45,0.7);
-    padding:4px 8px;
-    border-radius:4px;
-    z-index:999;
+    position: fixed;
+    top: 56px; right: 12px;
+    color: #d1d4dc;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(30, 34, 45, 0.85);
+    backdrop-filter: blur(4px);
+    padding: 5px 10px;
+    border-radius: 6px;
+    z-index: 999;
+    pointer-events: none;
+    border: 1px solid rgba(255,255,255,0.05);
   }
+
   #offline_banner {
-    position:fixed;
-    top: calc(50px + env(safe-area-inset-top));
-    left:10px; right:10px;
-    background:#ef5350;
-    color:#fff;
-    padding:8px 12px;
-    border-radius:6px;
-    font-size:13px;
-    text-align:center;
-    z-index:2000;
-    display:none;
-    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+    position: fixed;
+    top: 56px; left: 12px; right: 12px;
+    background: #ef5350;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    text-align: center;
+    z-index: 2000;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
+
   #conn_popup {
-    position:fixed;
-    top:-80px;
-    left:50%;
-    transform:translateX(-50%);
-    background:#ef5350;
-    color:#fff;
-    padding:10px 18px;
-    border-radius:8px;
-    font-size:13px;
-    z-index:3000;
-    box-shadow:0 4px 12px rgba(0,0,0,0.5);
+    position: fixed;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ef5350;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 3000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     transition: top 0.4s ease;
-    white-space:nowrap;
+    white-space: nowrap;
   }
   #conn_popup.show {
-    top: calc(50px + env(safe-area-inset-top));
+    top: 56px;
   }
 </style>
 </head>
@@ -166,7 +147,7 @@ if ('serviceWorker' in navigator) {
     .catch(err => console.log('❌ فشل تسجيل Service Worker:', err));
 }
 
-// ===== PWA: إشعار وتثبيت التطبيق الديناميكي الخاص بهذه الصفحة =====
+// ===== PWA: إشعار وتثبيت التطبيق الإجباري عند الطلب =====
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -180,70 +161,36 @@ function showInstallBanner() {
   const banner = document.createElement('div');
   banner.id = 'install-banner';
   banner.style.cssText = `
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 9999;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-    font-family: Arial, sans-serif;
-    animation: slideUp 0.5s ease;
+    color: white; padding: 15px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 9999; box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+    font-family: inherit; animation: slideUp 0.5s ease;
   `;
 
   const style = document.createElement('style');
   style.textContent = `
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .install-btn {
-      background: white;
-      color: #764ba2;
-      border: none;
-      padding: 10px 25px;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.3s;
+      background: white; color: #764ba2; border: none;
+      padding: 8px 20px; border-radius: 20px; font-size: 14px;
+      font-weight: bold; cursor: pointer;
     }
-    .install-btn:hover {
-      transform: scale(1.05);
-    }
-    .close-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0 10px;
-    }
-    .banner-text {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .banner-icon {
-      font-size: 30px;
-    }
+    .close-btn { background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0 8px; }
+    .banner-text { display: flex; align-items: center; gap: 12px; }
   `;
 
   banner.innerHTML = `
     <div class="banner-text">
-      <span class="banner-icon">📱</span>
+      <span style="font-size: 26px;">📱</span>
       <div>
-        <strong>تثبيت تطبيق (${document.title})</strong>
-        <div style="font-size: 14px; opacity: 0.9;">أضف هذه الصفحة لشاشتك الرئيسية لتصبح تطبيقاً مستقلًا</div>
+        <strong>تثبيت التطبيق</strong>
+        <div style="font-size: 13px; opacity: 0.9;">أضف التطبيق لشاشتك الرئيسية للوصول السريع</div>
       </div>
     </div>
-    <div>
-      <button class="install-btn" id="installBtn">تثبيت الآن</button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="install-btn" id="installBtn">تثبيت</button>
       <button class="close-btn" id="closeBanner">✕</button>
     </div>
   `;
@@ -255,26 +202,20 @@ function showInstallBanner() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const result = await deferredPrompt.userChoice;
-      if (result.outcome === 'accepted') {
-        console.log('✅ تم تثبيت التطبيق بنجاح');
-        banner.remove();
-      }
+      if (result.outcome === 'accepted') banner.remove();
       deferredPrompt = null;
     }
   });
 
-  document.getElementById('closeBanner').addEventListener('click', () => {
-    banner.remove();
-  });
+  document.getElementById('closeBanner').addEventListener('click', () => banner.remove());
 }
 
 window.addEventListener('appinstalled', () => {
-  console.log('✅ التطبيق مثبت بالفعل');
   const banner = document.getElementById('install-banner');
   if (banner) banner.remove();
 });
 
-// ===== كود التطبيق الأساسي (الرسم البياني) =====
+// ===== كود التطبيق الأساسي =====
 var STORAGE_TF_KEY = "xaut_custom_tf";
 var STORAGE_DATA_PREFIX = "xaut_candles_";
 var STORAGE_LAST_UPDATE_KEY = "xaut_last_update";
@@ -287,6 +228,7 @@ var connPopup = document.getElementById("conn_popup");
 var isOnline = true;
 var lastKnownCandles = [];
 
+// إنشاء الشارت مع ضبط مقياس السعر ليبقى ضمن الشاشة تماماً
 var chart = LightweightCharts.createChart(container, {
   width: container.clientWidth,
   height: container.clientHeight,
@@ -295,16 +237,21 @@ var chart = LightweightCharts.createChart(container, {
     textColor: '#d1d4dc',
   },
   grid: {
-    vertLines: { color: 'rgba(255,255,255,0.06)' },
-    horzLines: { color: 'rgba(255,255,255,0.06)' },
+    vertLines: { color: 'rgba(255,255,255,0.04)' },
+    horzLines: { color: 'rgba(255,255,255,0.04)' },
   },
   timeScale: {
     timeVisible: true,
     secondsVisible: false,
-    borderColor: '#363a45',
+    borderColor: '#2a2e39',
   },
   rightPriceScale: {
-    borderColor: '#363a45',
+    borderColor: '#2a2e39',
+    autoScale: true, // الحفاظ على القياس التلقائي لضمان عدم خروج القمم والحفر عن الشاشة عمودياً
+    scaleMargins: {
+      top: 0.1,    // ترك مساحة فارغة بسيطة بنسبة 10% أعلى أعلى قمة
+      bottom: 0.1, // ترك مساحة فارغة بسيطة بنسبة 10% أسفل أدنى قاع
+    },
   },
   crosshair: {
     mode: LightweightCharts.CrosshairMode.Normal,
@@ -319,10 +266,12 @@ var candleSeries = chart.addCandlestickSeries({
   wickDownColor: '#ef5350',
 });
 
+// إعادة التحجيم التلقائي عند تغيير حجم الشاشة أو تدوير الهاتف
 window.addEventListener("resize", function() {
   chart.resize(container.clientWidth, container.clientHeight);
 });
 
+// ==== تبديل الفريم ====
 var currentTf = localStorage.getItem(STORAGE_TF_KEY) || "60";
 var tfButtons = document.querySelectorAll(".tf_btn");
 
@@ -342,6 +291,7 @@ tfButtons.forEach(function(btn) {
   });
 });
 
+// ==== حفظ البيانات محليًا ====
 function saveCandlesToStorage() {
   try {
     localStorage.setItem(STORAGE_DATA_PREFIX + currentTf, JSON.stringify(lastKnownCandles));
@@ -351,6 +301,7 @@ function saveCandlesToStorage() {
 
 setInterval(saveCandlesToStorage, 10000);
 
+// ==== تحميل من الكاش المحلي ====
 function loadFromCacheIfAny() {
   try {
     var cached = localStorage.getItem(STORAGE_DATA_PREFIX + currentTf);
@@ -366,6 +317,7 @@ function loadFromCacheIfAny() {
   } catch(e) {}
 }
 
+// ==== جلب البيانات من Bybit ====
 function loadCandles() {
   fetch("https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=" + currentTf + "&limit=200")
     .then(function(res) {
@@ -394,6 +346,7 @@ function loadCandles() {
     });
 }
 
+// ==== تحديث آخر شمعة ====
 function updateLastCandle() {
   fetch("https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=" + currentTf + "&limit=2")
     .then(function(res) {
@@ -426,6 +379,7 @@ function updateLastCandle() {
     });
 }
 
+// ==== إدارة حالة الاتصال ====
 function setOnlineState(state) {
   isOnline = state;
   if (!state) {
@@ -438,6 +392,7 @@ function setOnlineState(state) {
   }
 }
 
+// ==== تنبيه انقطاع الإنترنت ====
 function checkConnectionPopup() {
   fetch("https://api.bybit.com/v5/market/time")
     .then(function(res) {
@@ -461,6 +416,7 @@ function showPopupIfOffline(offline) {
 
 setInterval(checkConnectionPopup, 3 * 60 * 1000);
 
+// ==== بدء التشغيل ====
 loadFromCacheIfAny();
 loadCandles();
 setInterval(updateLastCandle, 2000);
